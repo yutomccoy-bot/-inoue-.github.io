@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>DX 提案スライド</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* 全体レイアウト */
+    :root {
+      --bg-color: #050608;
+      --panel-color: #111317;
+      --text-color: #f7f7f7;
+      --muted-color: #a0a0b0;
+      --accent-color: #4fd1c5; /* アクセントは1色だけ */
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #202531 0, #050608 52%);
+      color: var(--text-color);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+        "Segoe UI", sans-serif;
+    }
+
+    /* スライドショーのラッパー */
+    .slideshow {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      padding: 32px 32px 56px;
+      background: linear-gradient(145deg, #10121a, #050609);
+      border-radius: 24px;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+
+    /* スライドコンテナ */
+    .slides {
+      position: relative;
+      height: 100%;
+      min-height: 320px;
+    }
+
+    /* 各スライド */
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 8px 4px 0;
+      opacity: 0;
+      transform: translateX(24px);
+      transition:
+        opacity 420ms ease,
+        transform 420ms ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    /* ヘッダー（スライド番号 + タイトル） */
+    .slide-header {
+      margin-bottom: 18px;
+    }
+
+    .slide-meta {
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-meta span.badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .slide-title {
+      margin: 10px 0 0;
+      font-size: 1.8rem;
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    /* 区切り線 */
+    .divider {
+      width: 64px;
+      height: 2px;
+      margin: 14px 0 18px;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        var(--accent-color),
+        rgba(79, 209, 197, 0.1)
+      );
+    }
+
+    /* 本文エリア */
+    .slide-body {
+      display: grid;
+      gap: 18px;
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted-color);
+      margin-bottom: 4px;
+    }
+
+    .section-title span {
+      color: var(--accent-color);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    ul {
+      margin: 4px 0 0;
+      padding-left: 1.1rem;
+    }
+
+    li {
+      margin: 3px 0;
+    }
+
+    .highlight-quote {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent-color);
+      font-size: 0.9rem;
+      color: var(--muted-color);
+    }
+
+    .note {
+      font-size: 0.9rem;
+      color: var(--muted-color);
+    }
+
+    .emphasis {
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    /* ナビゲーションボタン */
+    .nav-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: radial-gradient(circle at 30% 0, #252d37, #10121a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-color);
+      backdrop-filter: blur(10px);
+      transition:
+        background 160ms ease,
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        border-color 160ms ease;
+    }
+
+    .nav-button:hover {
+      background: radial-gradient(circle at 30% 0, #2d3748, #151824);
+      transform: translateY(-50%) translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
+      border-color: rgba(79, 209, 197, 0.6);
+    }
+
+    .nav-button:active {
+      transform: translateY(-50%) translateY(0);
+      box-shadow: none;
+    }
+
+    .nav-button:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+
+    .nav-prev {
+      left: 12px;
+    }
+
+    .nav-next {
+      right: 12px;
+    }
+
+    .nav-button span {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    /* インジケーター */
+    .indicators {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background 160ms ease,
+        transform 160ms ease,
+        border-color 160ms ease,
+        width 160ms ease;
+    }
+
+    .dot.active {
+      width: 22px;
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      transform: translateY(-1px);
+    }
+
+    .dot:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+
+    /* フッターメタ情報（ページ数など） */
+    .footer-meta {
+      position: absolute;
+      bottom: 12px;
+      right: 24px;
+      font-size: 0.8rem;
+      color: var(--muted-color);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    /* レスポンシブ調整 */
+    @media (max-width: 768px) {
+      .slideshow {
+        padding: 22px 18px 52px;
+        border-radius: 20px;
+      }
+
+      .slide-title {
+        font-size: 1.4rem;
+      }
+
+      .slide-body {
+        font-size: 0.92rem;
+      }
+
+      .nav-button {
+        width: 32px;
+        height: 32px;
+      }
+
+      .nav-prev {
+        left: 6px;
+      }
+
+      .nav-next {
+        right: 6px;
+      }
+
+      .indicators {
+        bottom: 14px;
+      }
+
+      .footer-meta {
+        bottom: 10px;
+        right: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        align-items: stretch;
+      }
+
+      .slideshow {
+        margin: 12px;
+        padding: 18px 14px 48px;
+      }
+
+      .slide-title {
+        font-size: 1.25rem;
+      }
+
+      ul {
+        padding-left: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- スライド全体のラッパー -->
+  <div class="slideshow" aria-label="DX 提案スライドショー">
+    <!-- スライドコンテナ -->
+    <div class="slides">
+      <!-- スライド 1：現状の課題と改善の方向性 -->
+      <section class="slide active" aria-labelledby="slide1-title">
+        <header class="slide-header">
+          <div class="slide-meta">
+            <span class="badge">Slide 1</span>
+            <span>現状整理 &amp; 改善の方向性</span>
+          </div>
+          <h2 class="slide-title" id="slide1-title">
+            現状の課題と改善の方向性
+          </h2>
+          <div class="divider"></div>
+        </header>
+
+        <div class="slide-body">
+          <div>
+            <div class="section-title">
+              <span>01</span>現状の課題
+            </div>
+            <ul>
+              <li>受注は FAX・メール → 印刷 → 紙管理</li>
+              <li>当日／後日発送の紙仕分けが大量に発生</li>
+              <li>各社フォーマットがバラバラで手入力負担が大きい</li>
+              <li>検索ができず、「探す・確認」の時間がかかる</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="section-title">
+              <span>02</span>改善の方向性
+            </div>
+            <ul>
+              <li>ペーパーレスFAX  
+                <br />→ 印刷ゼロ・紙仕分けゼロ・検索可能な状態へ
+              </li>
+              <li>AI OCR（非定型対応）  
+                <br />→ 手書き・バラバラな注文書でも必要項目をデータ抽出
+              </li>
+              <li>受注データの自動整理  
+                <br />→ 当日／後日発送の自動振り分け・社内共有を容易に
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="section-title">
+              <span>03</span>ねらい
+            </div>
+            <div class="highlight-quote">
+              「<span class="emphasis">紙から解放され、入力と探す時間を大幅削減する受注フロー</span>」に変える。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- スライド 2：改善案(To-Be) -->
+      <section class="slide" aria-labelledby="slide2-title">
+        <header class="slide-header">
+          <div class="slide-meta">
+            <span class="badge">Slide 2</span>
+            <span>To-Be モデル</span>
+          </div>
+          <h2 class="slide-title" id="slide2-title">
+            改善案 (To-Be)<br />
+            ～顧客側を変えず、社内だけで完結するDX～
+          </h2>
+          <div class="divider"></div>
+        </header>
+
+        <div class="slide-body">
+          <div>
+            <div class="section-title">
+              <span>01</span>具体的な改善ステップ
+            </div>
+            <ul>
+              <li>
+                インプット情報をデジタル化する。<br />
+                → FAX受信を紙ではなく PDF で受信するよう、複合機の設定変更
+              </li>
+              <li>
+                デジタル化された情報を OCR 機能でデータ化する。<br />
+                → AI OCR を含むシステム導入が必要
+              </li>
+              <li>
+                データ化された必要情報を関連システムと連携させる。<br />
+                → RPA（例：Power Automate Desktop）導入が必要
+              </li>
+            </ul>
+            <p class="note">
+              年間コスト：<span class="emphasis">約 6～7 万円</span><br />
+              導入・構築も含めて、<span class="emphasis">予算 50 万円以内で実現可能</span>
+            </p>
+          </div>
+
+          <div>
+            <div class="section-title">
+              <span>02</span>インプット情報をデータ化するメリット
+            </div>
+            <ul>
+              <li>
+                管理や検索が容易になる。<br />
+                → ペーパーレス化・業務効率の改善
+              </li>
+              <li>
+                データの 2 次利用・分析が可能になる。<br />
+                → 販売傾向分析・需要予測など、新たな付加価値の創出につながる
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ナビゲーションボタン -->
+    <button class="nav-button nav-prev" type="button" aria-label="前のスライドへ">
+      <span>‹</span>
+    </button>
+    <button class="nav-button nav-next" type="button" aria-label="次のスライドへ">
+      <span>›</span>
+    </button>
+
+    <!-- スライドインジケーター -->
+    <div class="indicators" aria-label="スライドインジケーター">
+      <button class="dot active" type="button" data-index="0"></button>
+      <button class="dot" type="button" data-index="1"></button>
+    </div>
+
+    <!-- フッターメタ情報 -->
+    <div class="footer-meta" aria-hidden="true">
+      DX PROPOSAL
+    </div>
+  </div>
+
+  <script>
+    // シンプルなスライド切り替えスクリプト
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const dots = Array.from(document.querySelectorAll(".dot"));
+    const prevBtn = document.querySelector(".nav-prev");
+    const nextBtn = document.querySelector(".nav-next");
+
+    let currentIndex = 0;
+
+    function updateSlides(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("active", i === index);
+      });
+      dots.forEach((dot, i) => {
+        dot.classList.toggle("active", i === index);
+      });
+      currentIndex = index;
+    }
+
+    function showNext() {
+      const nextIndex = (currentIndex + 1) % slides.length;
+      updateSlides(nextIndex);
+    }
+
+    function showPrev() {
+      const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+      updateSlides(prevIndex);
+    }
+
+    prevBtn.addEventListener("click", showPrev);
+    nextBtn.addEventListener("click", showNext);
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const i = Number(dot.dataset.index);
+        updateSlides(i);
+      });
+    });
+
+    // キーボード操作（左右キーで移動）
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") showNext();
+      if (event.key === "ArrowLeft") showPrev();
+    });
+  </script>
+</body>
+</html>
