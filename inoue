@@ -2,511 +2,308 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>DX 提案スライド</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>最終発表</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* 全体レイアウト */
-    :root {
-      --bg-color: #050608;
-      --panel-color: #111317;
-      --text-color: #f7f7f7;
-      --muted-color: #a0a0b0;
-      --accent-color: #4fd1c5; /* アクセントは1色だけ */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "YuGothic", sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.7;
+      color: #222;
+      background: #eef6fb;
     }
 
-    * {
+    /* ▼ 左側固定ナビ */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 160px;
+      height: 100vh;
+      background: #222;
+      color: #fff;
+      padding-top: 40px;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-sizing: border-box;
+      z-index: 20;
+    }
+
+    .side-menu a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 6px 0;
+      cursor: pointer;
+      transition: 0.2s;
+      opacity: 0.85;
+      user-select: none;
+    }
+
+    .side-menu a:hover { opacity: 0.7; }
+
+    .side-menu a.active {
+      font-weight: 700;
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 6px;
+    }
+
+    /* ▼ メイン領域（中央寄せ） */
+    .container {
+      margin-left: 160px;          /* サイドメニュー分 */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;          /* 横方向センター */
+      padding: 24px 16px 80px;
       box-sizing: border-box;
     }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at top, #202531 0, #050608 52%);
-      color: var(--text-color);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
-        "Segoe UI", sans-serif;
-    }
-
-    /* スライドショーのラッパー */
-    .slideshow {
-      position: relative;
-      width: 100%;
-      max-width: 960px;
-      padding: 32px 32px 56px;
-      background: linear-gradient(145deg, #10121a, #050609);
-      border-radius: 24px;
-      box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.03);
-      overflow: hidden;
-    }
-
-    /* スライドコンテナ */
-    .slides {
-      position: relative;
-      height: 100%;
-      min-height: 320px;
-    }
-
-    /* 各スライド */
-    .slide {
-      position: absolute;
-      inset: 0;
-      padding: 8px 4px 0;
-      opacity: 0;
-      transform: translateX(24px);
-      transition:
-        opacity 420ms ease,
-        transform 420ms ease;
-      pointer-events: none;
-    }
-
-    .slide.active {
-      opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
-    }
-
-    /* ヘッダー（スライド番号 + タイトル） */
-    .slide-header {
+    /* ヘッダーは常時表示（中央のカード上部に） */
+    header {
+      width: min(960px, 100%);
+      padding: 10px 8px 10px;
+      text-align: center;
+      background: transparent;      /* 横線を消したいので透明 */
       margin-bottom: 18px;
     }
 
-    .slide-meta {
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted-color);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    h1 { font-size: 60px; margin: 5px; }
+    .catch { font-size: 20px; }
+    .sub-catch { font-size: 40px; font-weight: 600; margin-top: 8px; }
 
-    .slide-meta span.badge {
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.03);
-    }
+    /* ▼ 選択中のsection内容だけを表示する“ステージ” */
+    .stage {
+      width: min(960px, 100%);
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-sizing: border-box;
 
-    .slide-title {
-      margin: 10px 0 0;
-      font-size: 1.8rem;
-      font-weight: 650;
-      line-height: 1.3;
-    }
-
-    /* 区切り線 */
-    .divider {
-      width: 64px;
-      height: 2px;
-      margin: 14px 0 18px;
-      border-radius: 999px;
-      background: linear-gradient(
-        90deg,
-        var(--accent-color),
-        rgba(79, 209, 197, 0.1)
-      );
-    }
-
-    /* 本文エリア */
-    .slide-body {
-      display: grid;
-      gap: 18px;
-      font-size: 0.98rem;
-      line-height: 1.7;
-    }
-
-    .section-title {
-      font-size: 0.9rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted-color);
-      margin-bottom: 4px;
-    }
-
-    .section-title span {
-      color: var(--accent-color);
-      font-weight: 600;
-      margin-right: 4px;
-    }
-
-    ul {
-      margin: 4px 0 0;
-      padding-left: 1.1rem;
-    }
-
-    li {
-      margin: 3px 0;
-    }
-
-    .highlight-quote {
-      margin-top: 8px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-left: 3px solid var(--accent-color);
-      font-size: 0.9rem;
-      color: var(--muted-color);
-    }
-
-    .note {
-      font-size: 0.9rem;
-      color: var(--muted-color);
-    }
-
-    .emphasis {
-      color: var(--accent-color);
-      font-weight: 600;
-    }
-
-    /* ナビゲーションボタン */
-    .nav-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: radial-gradient(circle at 30% 0, #252d37, #10121a);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      /* クリックしやすく */
       cursor: pointer;
-      color: var(--text-color);
-      backdrop-filter: blur(10px);
-      transition:
-        background 160ms ease,
-        transform 160ms ease,
-        box-shadow 160ms ease,
-        border-color 160ms ease;
-    }
+      user-select: none;
 
-    .nav-button:hover {
-      background: radial-gradient(circle at 30% 0, #2d3748, #151824);
-      transform: translateY(-50%) translateY(-1px);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
-      border-color: rgba(79, 209, 197, 0.6);
-    }
-
-    .nav-button:active {
-      transform: translateY(-50%) translateY(0);
-      box-shadow: none;
-    }
-
-    .nav-button:focus-visible {
-      outline: 2px solid var(--accent-color);
-      outline-offset: 2px;
-    }
-
-    .nav-prev {
-      left: 12px;
-    }
-
-    .nav-next {
-      right: 12px;
-    }
-
-    .nav-button span {
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
-    /* インジケーター */
-    .indicators {
-      position: absolute;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
+      /* LINE配置 */
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      background: rgba(255, 255, 255, 0.04);
-      cursor: pointer;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition:
-        background 160ms ease,
-        transform 160ms ease,
-        border-color 160ms ease,
-        width 160ms ease;
+    /* ===== LINE風：受信（h2） ===== */
+    h2 {
+      align-self: flex-start;
+      display: inline-block;
+      max-width: 78%;
+      font-size: 26px;
+      line-height: 1.35;
+      background: #e5e5ea;
+      color: #000;
+      padding: 14px 18px;
+      border-radius: 18px;
+      margin: 10px 0 4px 0;
+      border-left: none;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .dot.active {
-      width: 22px;
-      background: var(--accent-color);
-      border-color: var(--accent-color);
-      transform: translateY(-1px);
-    }
-
-    .dot:focus-visible {
-      outline: 2px solid var(--accent-color);
-      outline-offset: 2px;
-    }
-
-    /* フッターメタ情報（ページ数など） */
-    .footer-meta {
+    h2::before {
+      content: "";
       position: absolute;
-      bottom: 12px;
-      right: 24px;
-      font-size: 0.8rem;
-      color: var(--muted-color);
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
+      left: -10px;
+      top: 18px;
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-right: 10px solid #e5e5ea;
     }
 
-    /* レスポンシブ調整 */
-    @media (max-width: 768px) {
-      .slideshow {
-        padding: 22px 18px 52px;
-        border-radius: 20px;
-      }
-
-      .slide-title {
-        font-size: 1.4rem;
-      }
-
-      .slide-body {
-        font-size: 0.92rem;
-      }
-
-      .nav-button {
-        width: 32px;
-        height: 32px;
-      }
-
-      .nav-prev {
-        left: 6px;
-      }
-
-      .nav-next {
-        right: 6px;
-      }
-
-      .indicators {
-        bottom: 14px;
-      }
-
-      .footer-meta {
-        bottom: 10px;
-        right: 16px;
-      }
+    /* ===== LINE風：返信（p） ===== */
+    p {
+      align-self: flex-end;
+      display: inline-block;
+      max-width: 78%;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.45;
+      background: #06c755;
+      color: #000;
+      padding: 16px 20px;
+      border-radius: 18px;
+      margin: 4px 0 10px 0;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      white-space: normal;
+      word-break: break-word;
     }
 
-    @media (max-width: 480px) {
-      body {
-        align-items: stretch;
-      }
+    p::after {
+      content: "";
+      position: absolute;
+      right: -10px;
+      top: 18px;
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 10px solid #06c755;
+    }
 
-      .slideshow {
-        margin: 12px;
-        padding: 18px 14px 48px;
-      }
+    /* ▼ ステップ表示（クリックで順番に出す） */
+    .step-hidden { display: none !important; }
+    .step-show { animation: popIn 180ms ease-out; }
 
-      .slide-title {
-        font-size: 1.25rem;
-      }
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-      ul {
-        padding-left: 1rem;
-      }
+    /* 小さめ画面 */
+    @media (max-width: 900px) {
+      .container { margin-left: 160px; }
+      h2, p { max-width: 92%; }
+      h1 { font-size: 44px; }
+      .sub-catch { font-size: 30px; }
+      .stage { padding: 18px 16px; }
     }
   </style>
 </head>
 <body>
-  <!-- スライド全体のラッパー -->
-  <div class="slideshow" aria-label="DX 提案スライドショー">
-    <!-- スライドコンテナ -->
-    <div class="slides">
-      <!-- スライド 1：現状の課題と改善の方向性 -->
-      <section class="slide active" aria-labelledby="slide1-title">
-        <header class="slide-header">
-          <div class="slide-meta">
-            <span class="badge">Slide 1</span>
-            <span>現状整理 &amp; 改善の方向性</span>
-          </div>
-          <h2 class="slide-title" id="slide1-title">
-            現状の課題と改善の方向性
-          </h2>
-          <div class="divider"></div>
-        </header>
 
-        <div class="slide-body">
-          <div>
-            <div class="section-title">
-              <span>01</span>現状の課題
-            </div>
-            <ul>
-              <li>受注は FAX・メール → 印刷 → 紙管理</li>
-              <li>当日／後日発送の紙仕分けが大量に発生</li>
-              <li>各社フォーマットがバラバラで手入力負担が大きい</li>
-              <li>検索ができず、「探す・確認」の時間がかかる</li>
-            </ul>
-          </div>
+  <!-- ▼ 左側ナビ（section選択） -->
+  <nav class="side-menu">
+    <a onclick="selectSection('section1')" data-target="section1">1</a>
+    <a onclick="selectSection('section2')" data-target="section2">2</a>
+    <a onclick="selectSection('section3')" data-target="section3">3</a>
+    <a onclick="selectSection('section4')" data-target="section4">4</a>
+    <a onclick="selectSection('section5')" data-target="section5">5</a>
+    <a onclick="selectSection('section6')" data-target="section6">6</a>
+  </nav>
 
-          <div>
-            <div class="section-title">
-              <span>02</span>改善の方向性
-            </div>
-            <ul>
-              <li>ペーパーレスFAX  
-                <br />→ 印刷ゼロ・紙仕分けゼロ・検索可能な状態へ
-              </li>
-              <li>AI OCR（非定型対応）  
-                <br />→ 手書き・バラバラな注文書でも必要項目をデータ抽出
-              </li>
-              <li>受注データの自動整理  
-                <br />→ 当日／後日発送の自動振り分け・社内共有を容易に
-              </li>
-            </ul>
-          </div>
+  <div class="container">
 
-          <div>
-            <div class="section-title">
-              <span>03</span>ねらい
-            </div>
-            <div class="highlight-quote">
-              「<span class="emphasis">紙から解放され、入力と探す時間を大幅削減する受注フロー</span>」に変える。
-            </div>
-          </div>
-        </div>
-      </section>
+    <!-- ヘッダー(常時表示) -->
+    <header>
+      <h1>最終発表会</h1>
+      <div class="catch">令和7年度システム開発人材育成講座を終えて</div>
+      <div class="sub-catch">井上 祐加</div>
+    </header>
 
-      <!-- スライド 2：改善案(To-Be) -->
-      <section class="slide" aria-labelledby="slide2-title">
-        <header class="slide-header">
-          <div class="slide-meta">
-            <span class="badge">Slide 2</span>
-            <span>To-Be モデル</span>
-          </div>
-          <h2 class="slide-title" id="slide2-title">
-            改善案 (To-Be)<br />
-            ～顧客側を変えず、社内だけで完結するDX～
-          </h2>
-          <div class="divider"></div>
-        </header>
+    <!-- ▼ 真ん中に表示する：選択中sectionの内容だけ -->
+    <main class="stage" id="stage" aria-label="選択中セクション表示エリア"></main>
 
-        <div class="slide-body">
-          <div>
-            <div class="section-title">
-              <span>01</span>具体的な改善ステップ
-            </div>
-            <ul>
-              <li>
-                インプット情報をデジタル化する。<br />
-                → FAX受信を紙ではなく PDF で受信するよう、複合機の設定変更
-              </li>
-              <li>
-                デジタル化された情報を OCR 機能でデータ化する。<br />
-                → AI OCR を含むシステム導入が必要
-              </li>
-              <li>
-                データ化された必要情報を関連システムと連携させる。<br />
-                → RPA（例：Power Automate Desktop）導入が必要
-              </li>
-            </ul>
-            <p class="note">
-              年間コスト：<span class="emphasis">約 6～7 万円</span><br />
-              導入・構築も含めて、<span class="emphasis">予算 50 万円以内で実現可能</span>
-            </p>
-          </div>
+    <!-- ▼ データ（表示しないのでDOM内に置くだけ） -->
+    <template id="section1">
+      <h2>自己紹介</h2>
+      <p>
+        名前：井上 祐加 (いのうえ ゆうか)<br>
+        生年月日：1998年6月5日(27歳)<br>
+        現在の職業：臨床検査技師<br>
+        チーム演習：チームE(県内企業課題解決提案)
+      </p>
+    </template>
 
-          <div>
-            <div class="section-title">
-              <span>02</span>インプット情報をデータ化するメリット
-            </div>
-            <ul>
-              <li>
-                管理や検索が容易になる。<br />
-                → ペーパーレス化・業務効率の改善
-              </li>
-              <li>
-                データの 2 次利用・分析が可能になる。<br />
-                → 販売傾向分析・需要予測など、新たな付加価値の創出につながる
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
-    </div>
+    <template id="section2">
+      <h2>学習中に直面した困難を教えて！</h2>
+      <p>・時間の確保(仕事との両立)<br>・未経験からのスタート<br>・基本の知識が足りなかった</p>
 
-    <!-- ナビゲーションボタン -->
-    <button class="nav-button nav-prev" type="button" aria-label="前のスライドへ">
-      <span>‹</span>
-    </button>
-    <button class="nav-button nav-next" type="button" aria-label="次のスライドへ">
-      <span>›</span>
-    </button>
+      <h2>どうやって困難を乗り越えた？</h2>
+      <p>・思い通りに動いた時の達成感<br>・できることが増える楽しさ<br>・気づいたら夢中になっていた</p>
+    </template>
 
-    <!-- スライドインジケーター -->
-    <div class="indicators" aria-label="スライドインジケーター">
-      <button class="dot active" type="button" data-index="0"></button>
-      <button class="dot" type="button" data-index="1"></button>
-    </div>
+    <template id="section3">
+      <h2>チーム演習ではどんなことを意識した？</h2>
+      <p>”モヤっと💭”は隠さず相談する</p>
+    </template>
 
-    <!-- フッターメタ情報 -->
-    <div class="footer-meta" aria-hidden="true">
-      DX PROPOSAL
-    </div>
+    <template id="section4">
+      <h2>興味を持った技術分野と、これから深めたいスキルはなに？</h2>
+      <p>・フロントエンド(見える部分を作るのが楽しい)<br>＋その裏側(バックエンド)にも興味がある<br>・もっと色々な言語や技術を勉強したい</p>
+    </template>
+
+    <template id="section5">
+      <h2>この講座を通して成長した事と、現時点での課題は？</h2>
+      <p>・あえて”苦手”に挑戦した<br>・基礎をもっと定着させること</p>
+    </template>
+
+    <template id="section6">
+      <h2>これからの目標と、キャリアビジョンを教えて！</h2>
+      <p>・幅広い技術に挑戦したい<br>・求められる人材になりたい</p>
+    </template>
+
   </div>
 
   <script>
-    // シンプルなスライド切り替えスクリプト
-    const slides = Array.from(document.querySelectorAll(".slide"));
-    const dots = Array.from(document.querySelectorAll(".dot"));
-    const prevBtn = document.querySelector(".nav-prev");
-    const nextBtn = document.querySelector(".nav-next");
+    const stage = document.getElementById("stage");
+    let steps = [];
+    let stepIndex = 0;
+    let currentId = "section1";
 
-    let currentIndex = 0;
-
-    function updateSlides(index) {
-      slides.forEach((slide, i) => {
-        slide.classList.toggle("active", i === index);
-      });
-      dots.forEach((dot, i) => {
-        dot.classList.toggle("active", i === index);
-      });
-      currentIndex = index;
+    function highlightNav(id) {
+      document.querySelectorAll(".side-menu a").forEach(a => a.classList.remove("active"));
+      const activeLink = document.querySelector(`.side-menu a[data-target="${id}"]`);
+      if (activeLink) activeLink.classList.add("active");
     }
 
-    function showNext() {
-      const nextIndex = (currentIndex + 1) % slides.length;
-      updateSlides(nextIndex);
+    function loadSection(id) {
+      const tpl = document.getElementById(id);
+      if (!tpl) return;
+
+      // ステージを空にして該当テンプレの内容を載せる
+      stage.innerHTML = "";
+      const fragment = tpl.content.cloneNode(true);
+      stage.appendChild(fragment);
+
+      // ステップ対象を取得して最初は全部隠す
+      steps = Array.from(stage.querySelectorAll("h2, p"));
+      steps.forEach(el => el.classList.add("step-hidden"));
+      stepIndex = 0;
+
+      currentId = id;
+      highlightNav(id);
     }
 
-    function showPrev() {
-      const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
-      updateSlides(prevIndex);
+    function revealNext() {
+      if (stepIndex >= steps.length) return;
+      const next = steps[stepIndex];
+      next.classList.remove("step-hidden");
+      next.classList.add("step-show");
+      setTimeout(() => next.classList.remove("step-show"), 220);
+      stepIndex++;
     }
 
-    prevBtn.addEventListener("click", showPrev);
-    nextBtn.addEventListener("click", showNext);
+    function selectSection(id) {
+      loadSection(id);
+      // 選択した瞬間は何も出さず、クリックで進める仕様
+      // 最初からh2だけ出したいなら↓を有効に
+      // revealNext();
+    }
 
-    dots.forEach((dot) => {
-      dot.addEventListener("click", () => {
-        const i = Number(dot.dataset.index);
-        updateSlides(i);
-      });
+    // ステージクリックで次を出す
+    stage.addEventListener("click", () => {
+      revealNext();
     });
 
-    // キーボード操作（左右キーで移動）
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") showNext();
-      if (event.key === "ArrowLeft") showPrev();
-    });
+    // 初期表示
+    selectSection("section1");
+    // 発表開始しやすいように、最初のh2だけ表示（必要なら外してOK）
+    revealNext();
+    
+    // Enterキーで次のステップを表示
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // フォーム送信などを防ぐ
+      revealNext();
+    }
+  });
   </script>
+
 </body>
 </html>
+
